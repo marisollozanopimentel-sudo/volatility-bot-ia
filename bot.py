@@ -19,7 +19,7 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 # ==========================================
-# CONFIGURACIÓN Y ESTÉTICA (CYBERPUNK)
+# CONFIGURACI\xd3N Y EST\xc9TICA (CYBERPUNK)
 # ==========================================
 DERIV_API_URL = "wss://ws.deriv.com/websockets/v3"
 COLORS = {
@@ -117,9 +117,9 @@ class DerivClient:
 
         if "buy" in data:
             if "error" in data:
-                self.log(f"❌ ERROR: {data['error']['message']}")
+                self.log(f"\u274c ERROR: {data['error']['message']}")
             else:
-                self.log(f"✅ ORDEN LANZADA: {data['buy']['contract_id']}")
+                self.log(f"\u2705 ORDEN LANZADA: {data['buy']['contract_id']}")
                 self.ws.send(json.dumps({"proposal_open_contract": 1, "contract_id": data['buy']['contract_id'], "subscribe": 1}))
 
         if "proposal_open_contract" in data:
@@ -128,7 +128,7 @@ class DerivClient:
                 profit = float(contract.get("profit", 0))
                 self.on_result(profit)
 
-    def _on_error(self, ws, error): self.log(f"⚠️ Error WS: {error}")
+    def _on_error(self, ws, error): self.log(f"\u26a0\ufe0f Error WS: {error}")
     def _on_close(self, ws, a, b): self.connected = False
 
     def subscribe(self, symbol):
@@ -156,7 +156,7 @@ class DerivClient:
         self.ws.send(json.dumps(msg))
 
 # ==========================================
-# CEREBRO NEURAL CUÁDRUPLE (CNN, LSTM, GRU, TRANSFORMERS)
+# CEREBRO NEURAL CU\xc1DRUPLE (CNN, LSTM, GRU, TRANSFORMERS)
 # ==========================================
 class NeuralCore:
     def __init__(self):
@@ -254,7 +254,7 @@ class SilentEngineApp:
                   bg=color, fg="black", font=("Arial", 12, "bold"),
                   width=30, relief="flat", cursor="hand2").pack(pady=40, ipady=10)
 
-        tk.Button(f, text="ATRÁS", command=self.show_account_selection,
+        tk.Button(f, text="ATR\xc1S", command=self.show_account_selection,
                   bg=COLORS["bg"], fg=COLORS["gray"], font=("Arial", 10),
                   relief="flat", cursor="hand2").pack(side="bottom", pady=10)
 
@@ -269,7 +269,7 @@ class SilentEngineApp:
     def on_auth(self, ok, info):
         if ok:
             self.root.after(0, self.show_dash)
-            self.voice.speak("Núcleo cuádruple activo. CNN, LSTM, GRU y Transformers sincronizados.")
+            self.voice.speak("N\xfacleo cu\xe1druple activo. CNN, LSTM, GRU y Transformers sincronizados.")
         else:
             self.root.after(0, lambda: messagebox.showerror("Access Denied", f"Error: {info}"))
 
@@ -314,9 +314,9 @@ class SilentEngineApp:
 
         m_frame = tk.Frame(self.root, bg=COLORS["bg"])
         m_frame.pack(fill="x", padx=20, pady=5)
-        self.buy_btn = tk.Button(m_frame, text="BUY ⬆️", command=lambda: self.manual_trade("BUY"), bg=COLORS["green"], fg="black", font=("Arial", 10, "bold"), width=20, state="disabled", relief="flat")
+        self.buy_btn = tk.Button(m_frame, text="BUY \u2b06\ufe0f", command=lambda: self.manual_trade("BUY"), bg=COLORS["green"], fg="black", font=("Arial", 10, "bold"), width=20, state="disabled", relief="flat")
         self.buy_btn.pack(side="left", padx=5, expand=True, fill="x")
-        self.sell_btn = tk.Button(m_frame, text="SELL ⬇️", command=lambda: self.manual_trade("SELL"), bg=COLORS["red"], fg="black", font=("Arial", 10, "bold"), width=20, state="disabled", relief="flat")
+        self.sell_btn = tk.Button(m_frame, text="SELL \u2b07\ufe0f", command=lambda: self.manual_trade("SELL"), bg=COLORS["red"], fg="black", font=("Arial", 10, "bold"), width=20, state="disabled", relief="flat")
         self.sell_btn.pack(side="right", padx=5, expand=True, fill="x")
 
         cfg = tk.Frame(self.root, bg=COLORS["card"], padx=20, pady=10)
@@ -340,7 +340,7 @@ class SilentEngineApp:
         self.i_combo.current(4)
         self.i_combo.pack(fill="x", pady=5)
 
-        self.m_combo = ttk.Combobox(cfg, values=["MANUAL", "AUTOMÁTICO"], state="readonly")
+        self.m_combo = ttk.Combobox(cfg, values=["MANUAL", "AUTOM\xc1TICO"], state="readonly")
         self.m_combo.current(0)
         self.m_combo.pack(fill="x", pady=5)
 
@@ -372,7 +372,7 @@ class SilentEngineApp:
             self.net_tf.config(fg=COLORS["accent"])
             self.vol_status.config(text="VOL FORCE [ACTIVE]", fg=COLORS["volume"])
             self.client.subscribe(VOLATILITY_INDICES[self.i_combo.get()])
-            self.voice.speak(f"Escaneo de ráfagas iniciado. Buscando señales cada 30 segundos.")
+            self.voice.speak(f"Escaneo de r\xe1fagas iniciado. Buscando se\xf1ales cada 30 segundos.")
         else:
             self.running = False
             self.btn.config(text="** START QUAD-SCAN **", bg=COLORS["accent"], fg="black")
@@ -436,15 +436,15 @@ class SilentEngineApp:
             if sig != "HOLD" and not self.is_tracking_burst:
                 self.last_signal_time = now
                 dir_t = "la alza" if sig == "BUY" else "la baja"
-                label = f"QUAD-NEURAL BURST {sig} ⬆️" if sig == "BUY" else f"QUAD-NEURAL BURST {sig} ⬇️"
+                label = f"QUAD-NEURAL BURST {sig} \u2b06\ufe0f" if sig == "BUY" else f"QUAD-NEURAL BURST {sig} \u2b07\ufe0f"
                 color = COLORS["green"] if sig == "BUY" else COLORS["red"]
 
                 self.sig_label.config(text=label, fg=color)
-                self.conf_label.config(text="CALIFICACIÓN: 10/2 | PROBABILIDAD: 99.9%", fg=COLORS["neural"])
+                self.conf_label.config(text="CALIFICACI\xd3N: 10/2 | PROBABILIDAD: 99.9%", fg=COLORS["neural"])
 
-                self.voice.speak(f"Se generó una señal con una probabilidad del 99 por ciento, van a haber 5 ticks hacia {dir_t}. Entra ya.")
+                self.voice.speak(f"Se gener\xf3 una se\xf1al con una probabilidad del 99 por ciento, van a haber 5 ticks hacia {dir_t}. Entra ya.")
 
-                if self.m_combo.get() == "AUTOMÁTICO":
+                if self.m_combo.get() == "AUTOM\xc1TICO":
                     self.do_trade(sig)
 
                 self.start_15s_sequence()
@@ -459,7 +459,7 @@ class SilentEngineApp:
                 time.sleep(1.0)
             self.root.after(0, lambda: self.timer_label.config(text=""))
             self.root.after(0, lambda: self.sig_label.config(text="SCANNING MULTI-CORE...", fg=COLORS["neural"]))
-            self.voice.speak("Esperar nueva señal.")
+            self.voice.speak("Esperar nueva se\xf1al.")
             self.is_tracking_burst = False
         threading.Thread(target=run_count, daemon=True).start()
 
@@ -484,7 +484,7 @@ class SilentEngineApp:
 
     def stop_on_loss(self):
         if self.running: self.toggle()
-        messagebox.showwarning("CORE SHUTDOWN", "Riesgo máximo alcanzado. Sistema protegido.")
+        messagebox.showwarning("CORE SHUTDOWN", "Riesgo m\xe1ximo alcanzado. Sistema protegido.")
 
 if __name__ == "__main__":
     root = tk.Tk()
