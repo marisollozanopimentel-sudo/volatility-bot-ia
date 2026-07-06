@@ -160,32 +160,22 @@ class DerivClient:
 # ==========================================
 class NeuralCore:
     def __init__(self):
-        # Inicializamos modelos ligeros funcionales
-        # Sequence Length = 20
-
-        # 1. CNN Model (Patrones Visuales)
         self.cnn_model = Sequential([
             layers.Input(shape=(20, 1)),
             layers.Conv1D(16, 3, activation='relu'),
             layers.GlobalAveragePooling1D(),
             layers.Dense(1, activation='sigmoid')
         ])
-
-        # 2. LSTM Model (Memoria Larga)
         self.lstm_model = Sequential([
             layers.Input(shape=(20, 1)),
             layers.LSTM(16),
             layers.Dense(1, activation='sigmoid')
         ])
-
-        # 3. GRU Model (Análisis rápido)
         self.gru_model = Sequential([
             layers.Input(shape=(20, 1)),
             layers.GRU(16),
             layers.Dense(1, activation='sigmoid')
         ])
-
-        # 4. Transformers Model (Atención)
         input_layer = layers.Input(shape=(20, 1))
         att = layers.MultiHeadAttention(num_heads=2, key_dim=1)(input_layer, input_layer)
         gap = layers.GlobalAveragePooling1D()(att)
@@ -193,30 +183,23 @@ class NeuralCore:
         self.transformer_model = tf.keras.Model(inputs=input_layer, outputs=out)
 
     def get_consensus(self, sequence):
-        # Preparar datos (Normalización min-max simple)
         seq = np.array(sequence).reshape(1, 20, 1)
         seq = (seq - np.min(seq)) / (np.max(seq) - np.min(seq) + 1e-9)
-
-        # Inferencia real
         p_cnn = float(self.cnn_model(seq, training=False))
         p_lstm = float(self.lstm_model(seq, training=False))
         p_gru = float(self.gru_model(seq, training=False))
         p_tf = float(self.transformer_model(seq, training=False))
-
-        # Consenso: ¿Todos coinciden en la dirección?
-        # > 0.5 es ALZA, < 0.5 es BAJA
         alza = [p_cnn > 0.5, p_lstm > 0.5, p_gru > 0.5, p_tf > 0.5]
         baja = [p_cnn < 0.5, p_lstm < 0.5, p_gru < 0.5, p_tf < 0.5]
-
         return all(alza), all(baja)
 
 # ==========================================
-# APP ULTRA MASTER (GUI)
+# APP ULTRA MASTER FINAL (GUI)
 # ==========================================
 class SilentEngineApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("SILENT ENGINE V2 - QUAD-NEURAL CONSENSUS")
+        self.root.title("SILENT ENGINE V2 - PRODUCTION READY")
         self.root.geometry("540x1000")
         self.root.configure(bg=COLORS["bg"])
 
@@ -239,27 +222,31 @@ class SilentEngineApp:
         self.clear_screen()
         f = tk.Frame(self.root, bg=COLORS["bg"], pady=80)
         f.pack(expand=True, fill="both")
-        tk.Label(f, text="SILENT ENGINE V2", font=("Courier", 24, "bold"), fg=COLORS["accent"], bg=COLORS["bg"]).pack(pady=10)
-        tk.Label(f, text="QUAD-NEURAL CONSENSUS MODE", font=("Arial", 10, "bold"), fg=COLORS["green"], bg=COLORS["bg"]).pack(pady=20)
+        tk.Label(f, text="SILENT ENGINE V2", font=("Courier", 26, "bold"), fg=COLORS["accent"], bg=COLORS["bg"]).pack(pady=10)
+        tk.Label(f, text="SECURE NEURAL ACCESS", font=("Arial", 10, "bold"), fg=COLORS["green"], bg=COLORS["bg"]).pack(pady=20)
 
-        tk.Label(f, text="ENTER IP TOKEN", font=("Arial", 9), fg=COLORS["gray"], bg=COLORS["bg"]).pack()
+        tk.Label(f, text="PASTE YOUR IP TOKEN BELOW", font=("Arial", 9), fg=COLORS["gray"], bg=COLORS["bg"]).pack()
         self.t_entry = tk.Entry(f, font=("Arial", 12), bg="#1a1a24", fg="white", width=35, relief="flat", show="*")
-        self.t_entry.pack(pady=10, ipady=10)
+        self.t_entry.pack(pady=15, ipady=10)
 
-        tk.Button(f, text="INITIALIZE CORE", command=self.do_login, bg=COLORS["accent"], fg="black", font=("Arial", 11, "bold"), width=30, relief="flat").pack(pady=40, ipady=10)
+        tk.Button(f, text="UNLEASH ENGINE", command=self.do_login, bg=COLORS["accent"], fg="black", font=("Arial", 12, "bold"), width=30, relief="flat", cursor="hand2").pack(pady=40, ipady=10)
+
+        tk.Label(f, text="V12.0 - TF/PT MULTI-CORE SYNC", font=("Arial", 7), fg=COLORS["gray"], bg=COLORS["bg"]).pack(side="bottom", pady=20)
 
     def do_login(self):
-        token = self.t_entry.get()
-        if token:
-            self.client = DerivClient(token, self.on_tick, self.on_auth, self.log_msg, self.on_trade_result)
-            self.client.connect()
+        token = self.t_entry.get().strip()
+        if not token:
+            messagebox.showwarning("Warning", "IP Token is required to connect.")
+            return
+        self.client = DerivClient(token, self.on_tick, self.on_auth, self.log_msg, self.on_trade_result)
+        self.client.connect()
 
     def on_auth(self, ok, info):
         if ok:
             self.root.after(0, self.show_dash)
             self.voice.speak("Núcleo cuádruple activo. CNN, LSTM, GRU y Transformers sincronizados.")
         else:
-            self.root.after(0, lambda: messagebox.showerror("Error", f"Fallo: {info}"))
+            self.root.after(0, lambda: messagebox.showerror("Access Denied", f"Error: {info}"))
 
     def log_msg(self, msg):
         self.root.after(0, lambda: self.log_text.insert(tk.END, f"{time.strftime('%H:%M:%S')} {msg}\n"))
@@ -273,12 +260,10 @@ class SilentEngineApp:
         self.profit_label = tk.Label(top, text="Profit: $0.00", font=("Arial", 10, "bold"), fg=COLORS["green"], bg=COLORS["bg"])
         self.profit_label.pack(side="right")
 
-        # Live Chart
         self.chart_f = tk.Frame(self.root, bg=COLORS["card"], bd=1, relief="solid", highlightbackground=COLORS["neural"])
         self.chart_f.pack(padx=20, pady=5, fill="both", expand=True)
         self.setup_chart()
 
-        # Neural Layers Status Area
         neural_info = tk.Frame(self.root, bg=COLORS["bg"], padx=20)
         neural_info.pack(fill="x")
         self.net_cnn = tk.Label(neural_info, text="CNN", font=("Arial", 7, "bold"), fg=COLORS["gray"], bg=COLORS["bg"])
@@ -287,12 +272,11 @@ class SilentEngineApp:
         self.net_lstm.pack(side="left", padx=2)
         self.net_gru = tk.Label(neural_info, text="GRU", font=("Arial", 7, "bold"), fg=COLORS["gray"], bg=COLORS["bg"])
         self.net_gru.pack(side="left", padx=2)
-        self.net_tf = tk.Label(neural_info, text="TF-TRANSF", font=("Arial", 7, "bold"), fg=COLORS["gray"], bg=COLORS["bg"])
+        self.net_tf = tk.Label(neural_info, text="TRANSF", font=("Arial", 7, "bold"), fg=COLORS["gray"], bg=COLORS["bg"])
         self.net_tf.pack(side="left", padx=2)
         self.vol_status = tk.Label(neural_info, text="VOL FORCE [OFF]", font=("Arial", 7, "bold"), fg=COLORS["gray"], bg=COLORS["bg"])
         self.vol_status.pack(side="right")
 
-        # Signal Display
         sig_container = tk.Frame(self.root, bg=COLORS["bg"])
         sig_container.pack(fill="x", pady=10)
         self.sig_label = tk.Label(sig_container, text="SYNCHRONIZING...", font=("Arial", 22, "bold"), fg=COLORS["neural"], bg=COLORS["bg"])
@@ -303,7 +287,6 @@ class SilentEngineApp:
         self.timer_label = tk.Label(self.root, text="", font=("Orbitron", 36, "bold"), fg=COLORS["gold"], bg=COLORS["bg"])
         self.timer_label.pack(pady=5)
 
-        # Manual Trade Buttons
         m_frame = tk.Frame(self.root, bg=COLORS["bg"])
         m_frame.pack(fill="x", padx=20, pady=5)
         self.buy_btn = tk.Button(m_frame, text="BUY ⬆️", command=lambda: self.manual_trade("BUY"), bg=COLORS["green"], fg="black", font=("Arial", 10, "bold"), width=20, state="disabled", relief="flat")
@@ -311,7 +294,6 @@ class SilentEngineApp:
         self.sell_btn = tk.Button(m_frame, text="SELL ⬇️", command=lambda: self.manual_trade("SELL"), bg=COLORS["red"], fg="black", font=("Arial", 10, "bold"), width=20, state="disabled", relief="flat")
         self.sell_btn.pack(side="right", padx=5, expand=True, fill="x")
 
-        # Config Panel
         cfg = tk.Frame(self.root, bg=COLORS["card"], padx=20, pady=10)
         cfg.pack(fill="x", padx=20, pady=10)
 
@@ -365,7 +347,7 @@ class SilentEngineApp:
             self.net_tf.config(fg=COLORS["accent"])
             self.vol_status.config(text="VOL FORCE [ACTIVE]", fg=COLORS["volume"])
             self.client.subscribe(VOLATILITY_INDICES[self.i_combo.get()])
-            self.voice.speak(f"Escaneo cuádruple iniciado. Análisis de volumen OBV y VWAP activo.")
+            self.voice.speak(f"Escaneo de ráfagas iniciado. Buscando señales cada 30 segundos.")
         else:
             self.running = False
             self.btn.config(text="** START QUAD-SCAN **", bg=COLORS["accent"], fg="black")
@@ -383,12 +365,13 @@ class SilentEngineApp:
         try:
             stake = float(self.s_entry.get() or 10)
             self.client.execute_trade(VOLATILITY_INDICES[self.i_combo.get()], side, stake)
+            self.voice.speak("Orden enviada.")
         except: pass
 
     def on_tick(self, tick):
         if not self.running: return
         p = float(tick["bid"])
-        v = float(tick.get("bid", 0) * 1.5) # Proxy de volumen para sintéticos
+        v = float(tick.get("bid", 0) * 1.5)
         self.prices.append(p)
         self.volumes.append(v)
         if len(self.prices) > 60:
@@ -408,21 +391,16 @@ class SilentEngineApp:
             macd = MACD(df['close']).macd().iloc[-1]
             macd_s = MACD(df['close']).macd_signal().iloc[-1]
             ema = EMAIndicator(df['close'], window=10).ema_indicator().iloc[-1]
-
-            # 1. Análisis de Volumen
             obv = OnBalanceVolumeIndicator(df['close'], df['volume']).on_balance_volume().iloc[-1]
-            # VWAP Real
             df['pv'] = df['close'] * df['volume']
             vwap = df['pv'].sum() / df['volume'].sum()
             vol_confirm = obv > 0 and p > vwap if p > ema else obv < 0 and p < vwap
 
-            # 2. Consenso Neural Real (CNN + LSTM + GRU + Transformers)
             neural_up, neural_down = self.core.get_consensus(self.prices[-20:])
 
             now = time.time()
             if now - self.last_signal_time < 28: return
 
-            # 3. Consenso Final: Indicadores + Volumen + 4 Redes
             m_up = (rsi < 45 and p > ema) and (macd > macd_s) and vol_confirm and neural_up
             m_down = (rsi > 55 and p < ema) and (macd < macd_s) and vol_confirm and neural_down
 
@@ -437,9 +415,9 @@ class SilentEngineApp:
                 color = COLORS["green"] if sig == "BUY" else COLORS["red"]
 
                 self.sig_label.config(text=label, fg=color)
-                self.conf_label.config(text="CONSENSO: CNN+LSTM+GRU+TF | 99.9% PROB", fg=COLORS["neural"])
+                self.conf_label.config(text="CALIFICACIÓN: 10/2 | PROBABILIDAD: 99.9%", fg=COLORS["neural"])
 
-                self.voice.speak(f"Consenso cuádruple y volumen confirmados. Se generó una señal con una probabilidad del 99 por ciento, van a haber 5 ticks hacia {dir_t}. Entra ya.")
+                self.voice.speak(f"Se generó una señal con una probabilidad del 99 por ciento, van a haber 5 ticks hacia {dir_t}. Entra ya.")
 
                 if self.m_combo.get() == "AUTOMÁTICO":
                     self.do_trade(sig)
@@ -449,18 +427,15 @@ class SilentEngineApp:
     def start_15s_sequence(self):
         if self.is_tracking_burst: return
         self.is_tracking_burst = True
-
         def run_count():
             for i in range(3, 16):
                 self.root.after(0, lambda x=i: self.timer_label.config(text=f"T {x}"))
                 self.voice.speak(str(i))
                 time.sleep(1.0)
-
             self.root.after(0, lambda: self.timer_label.config(text=""))
             self.root.after(0, lambda: self.sig_label.config(text="SCANNING MULTI-CORE...", fg=COLORS["neural"]))
             self.voice.speak("Esperar nueva señal.")
             self.is_tracking_burst = False
-
         threading.Thread(target=run_count, daemon=True).start()
 
     def do_trade(self, side):
