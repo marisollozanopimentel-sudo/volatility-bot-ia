@@ -1,0 +1,8 @@
+pandas
+numpy
+ta
+python-dotenv
+websocket-client
+pyttsx3
+matplotlib
+tensorflow
