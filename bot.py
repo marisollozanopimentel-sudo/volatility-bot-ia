@@ -213,25 +213,50 @@ class SilentEngineApp:
         self.is_tracking_burst = False
         self.core = NeuralCore()
 
-        self.show_login()
+        self.show_account_selection()
 
     def clear_screen(self):
         for w in self.root.winfo_children(): w.destroy()
 
-    def show_login(self):
+    def show_account_selection(self):
         self.clear_screen()
         f = tk.Frame(self.root, bg=COLORS["bg"], pady=80)
         f.pack(expand=True, fill="both")
-        tk.Label(f, text="SILENT ENGINE V2", font=("Courier", 26, "bold"), fg=COLORS["accent"], bg=COLORS["bg"]).pack(pady=10)
-        tk.Label(f, text="SECURE NEURAL ACCESS", font=("Arial", 10, "bold"), fg=COLORS["green"], bg=COLORS["bg"]).pack(pady=20)
 
-        tk.Label(f, text="PASTE YOUR IP TOKEN BELOW", font=("Arial", 9), fg=COLORS["gray"], bg=COLORS["bg"]).pack()
+        tk.Label(f, text="SILENT ENGINE V2", font=("Courier", 26, "bold"), fg=COLORS["accent"], bg=COLORS["bg"]).pack(pady=10)
+        tk.Label(f, text="SELECCIONE TIPO DE CUENTA", font=("Arial", 12, "bold"), fg=COLORS["green"], bg=COLORS["bg"]).pack(pady=30)
+
+        tk.Button(f, text="CUENTA DEMO", command=lambda: self.show_token_entry("DEMO"),
+                  bg=COLORS["card"], fg=COLORS["accent"], font=("Arial", 14, "bold"),
+                  width=25, relief="flat", cursor="hand2", bd=1, highlightbackground=COLORS["accent"]).pack(pady=10, ipady=15)
+
+        tk.Button(f, text="CUENTA REAL", command=lambda: self.show_token_entry("REAL"),
+                  bg=COLORS["card"], fg=COLORS["red"], font=("Arial", 14, "bold"),
+                  width=25, relief="flat", cursor="hand2", bd=1, highlightbackground=COLORS["red"]).pack(pady=10, ipady=15)
+
+        tk.Label(f, text="V12.0 - HIGH PERFORMANCE TRADING", font=("Arial", 7), fg=COLORS["gray"], bg=COLORS["bg"]).pack(side="bottom", pady=20)
+
+    def show_token_entry(self, account_type):
+        self.clear_screen()
+        f = tk.Frame(self.root, bg=COLORS["bg"], pady=80)
+        f.pack(expand=True, fill="both")
+
+        color = COLORS["accent"] if account_type == "DEMO" else COLORS["red"]
+
+        tk.Label(f, text=f"CONECTAR: {account_type}", font=("Courier", 22, "bold"), fg=color, bg=COLORS["bg"]).pack(pady=10)
+        tk.Label(f, text="INGRESE SU API TOKEN", font=("Arial", 10), fg="white", bg=COLORS["bg"]).pack(pady=20)
+
         self.t_entry = tk.Entry(f, font=("Arial", 12), bg="#1a1a24", fg="white", width=35, relief="flat", show="*")
         self.t_entry.pack(pady=15, ipady=10)
+        self.t_entry.focus_set()
 
-        tk.Button(f, text="UNLEASH ENGINE", command=self.do_login, bg=COLORS["accent"], fg="black", font=("Arial", 12, "bold"), width=30, relief="flat", cursor="hand2").pack(pady=40, ipady=10)
+        tk.Button(f, text="INICIAR SISTEMA", command=self.do_login,
+                  bg=color, fg="black", font=("Arial", 12, "bold"),
+                  width=30, relief="flat", cursor="hand2").pack(pady=40, ipady=10)
 
-        tk.Label(f, text="V12.0 - TF/PT MULTI-CORE SYNC", font=("Arial", 7), fg=COLORS["gray"], bg=COLORS["bg"]).pack(side="bottom", pady=20)
+        tk.Button(f, text="ATRÁS", command=self.show_account_selection,
+                  bg=COLORS["bg"], fg=COLORS["gray"], font=("Arial", 10),
+                  relief="flat", cursor="hand2").pack(side="bottom", pady=10)
 
     def do_login(self):
         token = self.t_entry.get().strip()
