@@ -2,7 +2,6 @@ import json
 import websocket
 import threading
 import time
-import logging
 import os
 import pandas as pd
 import numpy as np
@@ -28,7 +27,7 @@ COLORS = {
     "red": "#ff3366",
     "text": "#ffffff",
     "gray": "#444455",
-    "blue": "#2a2a4a"
+    "gold": "#ffd700"
 }
 
 VOLATILITY_INDICES = {
@@ -168,6 +167,7 @@ class SilentEngineApp:
         self.total_profit = 0
         self.last_signal_text = ""
         self.last_trade_time = 0
+        self.tick_counter = 0
 
         self.show_login()
 
@@ -222,15 +222,15 @@ class SilentEngineApp:
         ai_info.pack(fill="x")
         self.ai_status = tk.Label(ai_info, text="NEURAL CORE: STANDBY", font=("Arial", 9, "bold"), fg=COLORS["gray"], bg=COLORS["bg"])
         self.ai_status.pack(side="left")
-        self.acc_label = tk.Label(ai_info, text="PRECISIÓN: 99.9% ACC", font=("Arial", 8), fg=COLORS["accent"], bg=COLORS["bg"])
+        self.acc_label = tk.Label(ai_info, text="TICK SCAN: 1/3", font=("Arial", 8), fg=COLORS["accent"], bg=COLORS["bg"])
         self.acc_label.pack(side="right")
 
         # Signal Display
         sig_container = tk.Frame(self.root, bg=COLORS["bg"])
         sig_container.pack(fill="x", pady=10)
-        self.sig_label = tk.Label(sig_container, text="WAITING FOR START...", font=("Arial", 22, "bold"), fg=COLORS["accent"], bg=COLORS["bg"])
+        self.sig_label = tk.Label(sig_container, text="WAITING FOR DATA...", font=("Arial", 22, "bold"), fg=COLORS["accent"], bg=COLORS["bg"])
         self.sig_label.pack()
-        self.conf_label = tk.Label(sig_container, text="", font=("Arial", 14, "bold"), fg=COLORS["green"], bg=COLORS["bg"])
+        self.conf_label = tk.Label(sig_container, text="", font=("Arial", 16, "bold"), fg=COLORS["green"], bg=COLORS["bg"])
         self.conf_label.pack()
 
         # Manual Buttons
@@ -285,12 +285,13 @@ class SilentEngineApp:
         if not self.running:
             self.running = True
             self.prices = []
+            self.tick_counter = 0
             self.btn.config(text="** DETENER BOT **", bg=COLORS["red"], fg="white")
             self.buy_btn.config(state="normal")
             self.sell_btn.config(state="normal")
-            self.ai_status.config(text="NEURAL CORE: ACTIVE - ANALYZING RSI, MACD, BB", fg=COLORS["green"])
+            self.ai_status.config(text="NEURAL CORE: ACTIVE", fg=COLORS["green"])
             self.client.subscribe(VOLATILITY_INDICES[self.i_combo.get()])
-            self.voice.speak(f"Escaneo neural iniciado en tiempo real. Revisando todos los parámetros del mercado.")
+            self.voice.speak(f"Escaneo neural activo. Análisis cada 3 ticks iniciado.")
         else:
             self.running = False
             self.btn.config(text="** INICIAR ESCANEO IA **", bg=COLORS["accent"], fg="black")
@@ -304,7 +305,7 @@ class SilentEngineApp:
         try:
             stake = float(self.s_entry.get() or 10)
             self.client.execute_trade(VOLATILITY_INDICES[self.i_combo.get()], side, stake)
-            self.voice.speak(f"Enviando orden manual de {side}.")
+            self.voice.speak(f"Orden manual de {side} enviada.")
         except: messagebox.showerror("Error", "Revisa la configuración del Stake")
 
     def on_tick(self, tick):
@@ -312,14 +313,29 @@ class SilentEngineApp:
         p = float(tick["bid"])
         self.prices.append(p)
         if len(self.prices) > 60: self.prices.pop(0)
-        self.root.after(0, self.update_ui, p)
 
-    def update_ui(self, p):
+        # Incrementar contador de ticks
+        self.tick_counter += 1
+        scan_progress = (self.tick_counter % 3) + 1
+        self.root.after(0, lambda: self.acc_label.config(text=f"TICK SCAN: {scan_progress}/3"))
+
+        # Solo analizar cada 3 ticks
+        if self.tick_counter >= 3:
+            self.tick_counter = 0
+            self.root.after(0, self.update_ui, p)
+        else:
+            # Solo actualizar el gráfico visualmente entre escaneos
+            self.root.after(0, self.refresh_chart_only)
+
+    def refresh_chart_only(self):
         self.ax.clear()
-        self.ax.plot(self.prices, color=COLORS["accent"], linewidth=2)
+        self.ax.plot(self.prices, color=COLORS["accent"], linewidth=1.5)
         self.ax.set_facecolor(COLORS["card"])
         self.ax.grid(color="#1a1a2a", linestyle="--")
         self.canvas.draw()
+
+    def update_ui(self, p):
+        self.refresh_chart_only()
 
         if len(self.prices) >= 25:
             df = pd.DataFrame({'close': self.prices})
@@ -344,23 +360,26 @@ class SilentEngineApp:
             else: score_sell += 10
 
             sig = "HOLD"
-            confidence = 0
-            if score_buy >= 60:
+            confidence_perc = 0
+            if score_buy >= 65:
                 sig = "BUY"
-                confidence = 80 + (min(score_buy, 110) - 60) * (19.9 / 50)
-            elif score_sell >= 60:
+                confidence_perc = 80 + (min(score_buy, 110) - 65) * (19.9 / 45)
+            elif score_sell >= 65:
                 sig = "SELL"
-                confidence = 80 + (min(score_sell, 110) - 60) * (19.9 / 50)
+                confidence_perc = 80 + (min(score_sell, 110) - 65) * (19.9 / 45)
 
-            label = f"STRONG {sig} ⬆️" if sig == "BUY" else (f"STRONG {sig} ⬇️" if sig == "SELL" else "SCANNING DATA...")
+            # Calcular puntuación sobre 10
+            score_10 = (confidence_perc / 100) * 10
+
+            label = f"STRONG {sig} ⬆️" if sig == "BUY" else (f"STRONG {sig} ⬇️" if sig == "SELL" else "SCANNING MARKET...")
             color = COLORS["green"] if sig == "BUY" else (COLORS["red"] if sig == "SELL" else COLORS["accent"])
 
             if self.last_signal_text != label:
                 self.sig_label.config(text=label, fg=color)
                 if sig != "HOLD":
-                    conf_text = f"CONFIANZA IA: {confidence:.1f}%"
+                    conf_text = f"CONFIANZA IA: {confidence_perc:.1f}% | PUNTUACIÓN: {score_10:.1f}/10"
                     self.conf_label.config(text=conf_text, fg=color)
-                    self.voice.speak(f"IA confirma señal de {sig} con {int(confidence)} por ciento de seguridad.")
+                    self.voice.speak(f"IA confirma señal de {sig} con puntuación de {int(score_10)} sobre 10. Seguridad del {int(confidence_perc)} por ciento.")
                     if self.m_combo.get() == "MODO AUTOMÁTICO": self.do_trade(sig)
                 else:
                     self.conf_label.config(text="")
@@ -378,7 +397,7 @@ class SilentEngineApp:
     def on_trade_result(self, profit):
         self.total_profit += profit
         self.root.after(0, self.update_profit_display)
-        msg = f"Operación cerrada. {'Ganancia' if profit > 0 else 'Pérdida'}. Balance: {self.total_profit:.2f}."
+        msg = f"Operación cerrada. {'Ganancia' if profit > 0 else 'Pérdida'}. Balance actual: {self.total_profit:.2f}."
         self.voice.speak(msg)
 
         try:
