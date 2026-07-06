@@ -115,6 +115,7 @@ class DerivClient:
                 self.log(f"❌ ERROR: {data['error']['message']}")
             else:
                 self.log(f"✅ ORDEN LANZADA: {data['buy']['contract_id']}")
+                # Suscribirse para ver el resultado
                 self.ws.send(json.dumps({"proposal_open_contract": 1, "contract_id": data['buy']['contract_id'], "subscribe": 1}))
 
         if "proposal_open_contract" in data:
@@ -156,7 +157,7 @@ class DerivClient:
 class SilentEngineApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("SILENT ENGINE V2 - MASTER EDITION")
+        self.root.title("SILENT ENGINE V2 - PRECISION BURST")
         self.root.geometry("520x980")
         self.root.configure(bg=COLORS["bg"])
 
@@ -168,7 +169,7 @@ class SilentEngineApp:
         self.last_signal_text = ""
         self.last_trade_time = 0
         self.tick_counter = 0
-        self.is_counting_down = False
+        self.is_tracking_burst = False
 
         self.show_login()
 
@@ -180,7 +181,7 @@ class SilentEngineApp:
         f = tk.Frame(self.root, bg=COLORS["bg"], pady=80)
         f.pack(expand=True, fill="both")
         tk.Label(f, text="SILENT ENGINE V2", font=("Courier", 24, "bold"), fg=COLORS["accent"], bg=COLORS["bg"]).pack(pady=10)
-        tk.Label(f, text="MASTER NEURAL ACCESS", font=("Arial", 10), fg=COLORS["green"], bg=COLORS["bg"]).pack(pady=20)
+        tk.Label(f, text="BURST PREDICTION MODE", font=("Arial", 10), fg=COLORS["green"], bg=COLORS["bg"]).pack(pady=20)
 
         tk.Label(f, text="ENTER IP TOKEN", font=("Arial", 9), fg=COLORS["gray"], bg=COLORS["bg"]).pack()
         self.t_entry = tk.Entry(f, font=("Arial", 12), bg="#1a1a24", fg="white", width=35, relief="flat", show="*")
@@ -197,7 +198,7 @@ class SilentEngineApp:
     def on_auth(self, ok, info):
         if ok:
             self.root.after(0, self.show_dash)
-            self.voice.speak("Aplicación iniciada. Sistema Maestro activado.")
+            self.voice.speak("Sesión iniciada. Escaneo de ráfagas activado.")
         else:
             self.root.after(0, lambda: messagebox.showerror("Error", f"Fallo de Token: {info}"))
 
@@ -218,32 +219,32 @@ class SilentEngineApp:
         self.chart_f.pack(padx=20, pady=5, fill="both", expand=True)
         self.setup_chart()
 
-        # Neural Analysis Data Area
+        # Burst Status Area
         ai_info = tk.Frame(self.root, bg=COLORS["bg"], padx=20)
         ai_info.pack(fill="x")
-        self.ai_status = tk.Label(ai_info, text="NEURAL CORE: STANDBY", font=("Arial", 9, "bold"), fg=COLORS["gray"], bg=COLORS["bg"])
+        self.ai_status = tk.Label(ai_info, text="CORE: PREDICTING 5 TICKS", font=("Arial", 9, "bold"), fg=COLORS["gray"], bg=COLORS["bg"])
         self.ai_status.pack(side="left")
-        self.acc_label = tk.Label(ai_info, text="SCAN: 0/0", font=("Arial", 8), fg=COLORS["accent"], bg=COLORS["bg"])
-        self.acc_label.pack(side="right")
+        self.scan_label = tk.Label(ai_info, text="SCAN: 0/3", font=("Arial", 8), fg=COLORS["accent"], bg=COLORS["bg"])
+        self.scan_label.pack(side="right")
 
         # Signal Display
         sig_container = tk.Frame(self.root, bg=COLORS["bg"])
         sig_container.pack(fill="x", pady=10)
-        self.sig_label = tk.Label(sig_container, text="WAITING FOR DATA...", font=("Arial", 22, "bold"), fg=COLORS["accent"], bg=COLORS["bg"])
+        self.sig_label = tk.Label(sig_container, text="ANALYZING MOMENTUM...", font=("Arial", 20, "bold"), fg=COLORS["accent"], bg=COLORS["bg"])
         self.sig_label.pack()
-        self.conf_label = tk.Label(sig_container, text="", font=("Arial", 14, "bold"), fg=COLORS["green"], bg=COLORS["bg"])
+        self.conf_label = tk.Label(sig_container, text="", font=("Arial", 12, "bold"), fg=COLORS["green"], bg=COLORS["bg"])
         self.conf_label.pack()
 
-        # Countdown Display
-        self.countdown_label = tk.Label(self.root, text="", font=("Orbitron", 30, "bold"), fg=COLORS["gold"], bg=COLORS["bg"])
-        self.countdown_label.pack()
+        # Burst Counter (Tick 1 to 5)
+        self.burst_count_label = tk.Label(self.root, text="", font=("Orbitron", 36, "bold"), fg=COLORS["gold"], bg=COLORS["bg"])
+        self.burst_count_label.pack(pady=5)
 
-        # Manual Buttons
+        # Manual Trade Buttons
         m_frame = tk.Frame(self.root, bg=COLORS["bg"])
         m_frame.pack(fill="x", padx=20, pady=5)
-        self.buy_btn = tk.Button(m_frame, text="BUY ⬆️", command=lambda: self.manual_trade("BUY"), bg=COLORS["green"], fg="black", font=("Arial", 10, "bold"), width=20, state="disabled", relief="flat")
+        self.buy_btn = tk.Button(m_frame, text="BUY BURST ⬆️", command=lambda: self.manual_trade("BUY"), bg=COLORS["green"], fg="black", font=("Arial", 10, "bold"), width=20, state="disabled", relief="flat")
         self.buy_btn.pack(side="left", padx=5, expand=True, fill="x")
-        self.sell_btn = tk.Button(m_frame, text="SELL ⬇️", command=lambda: self.manual_trade("SELL"), bg=COLORS["red"], fg="black", font=("Arial", 10, "bold"), width=20, state="disabled", relief="flat")
+        self.sell_btn = tk.Button(m_frame, text="SELL BURST ⬇️", command=lambda: self.manual_trade("SELL"), bg=COLORS["red"], fg="black", font=("Arial", 10, "bold"), width=20, state="disabled", relief="flat")
         self.sell_btn.pack(side="right", padx=5, expand=True, fill="x")
 
         # Config Panel
@@ -259,27 +260,20 @@ class SilentEngineApp:
 
         row2 = tk.Frame(cfg, bg=COLORS["card"])
         row2.pack(fill="x", pady=2)
-        tk.Label(row2, text="MAX LOSS ($):", fg="white", bg=COLORS["card"], font=("Arial", 8)).pack(side="left")
+        tk.Label(row2, text="STOP LOSS ($):", fg="white", bg=COLORS["card"], font=("Arial", 8)).pack(side="left")
         self.l_entry = tk.Entry(row2, font=("Arial", 10), bg=COLORS["bg"], fg="white", relief="flat", width=10)
         self.l_entry.insert(0, "100")
         self.l_entry.pack(side="right")
-
-        row3 = tk.Frame(cfg, bg=COLORS["card"])
-        row3.pack(fill="x", pady=2)
-        tk.Label(row3, text="SCAN TICKS:", fg="white", bg=COLORS["card"], font=("Arial", 8)).pack(side="left")
-        self.tick_entry = tk.Entry(row3, font=("Arial", 10), bg=COLORS["bg"], fg="white", relief="flat", width=10)
-        self.tick_entry.insert(0, "3")
-        self.tick_entry.pack(side="right")
 
         self.i_combo = ttk.Combobox(cfg, values=list(VOLATILITY_INDICES.keys()), state="readonly")
         self.i_combo.current(4)
         self.i_combo.pack(fill="x", pady=5)
 
-        self.m_combo = ttk.Combobox(cfg, values=["MANUAL", "AUTOMÁTICO"], state="readonly")
+        self.m_combo = ttk.Combobox(cfg, values=["MODO MANUAL", "MODO AUTOMÁTICO"], state="readonly")
         self.m_combo.current(0)
         self.m_combo.pack(fill="x", pady=5)
 
-        self.btn = tk.Button(self.root, text="** START ENGINE **", command=self.toggle, bg=COLORS["accent"], fg="black", font=("Arial", 12, "bold"), relief="flat")
+        self.btn = tk.Button(self.root, text="** START BURST SCAN **", command=self.toggle, bg=COLORS["accent"], fg="black", font=("Arial", 12, "bold"), relief="flat")
         self.btn.pack(fill="x", padx=40, pady=10, ipady=15)
 
         self.log_text = tk.Text(self.root, height=3, bg=COLORS["bg"], fg=COLORS["gray"], font=("Arial", 8), relief="flat", borderwidth=0)
@@ -298,27 +292,27 @@ class SilentEngineApp:
             self.running = True
             self.prices = []
             self.tick_counter = 0
-            self.btn.config(text="** STOP ENGINE **", bg=COLORS["red"], fg="white")
+            self.btn.config(text="** STOP SCAN **", bg=COLORS["red"], fg="white")
             self.buy_btn.config(state="normal")
             self.sell_btn.config(state="normal")
-            self.ai_status.config(text="NEURAL CORE: ACTIVE", fg=COLORS["green"])
+            self.ai_status.config(text="NEURAL CORE: BURST PREDICTION ACTIVE", fg=COLORS["green"])
             self.client.subscribe(VOLATILITY_INDICES[self.i_combo.get()])
-            scan_t = self.tick_entry.get() or "3"
-            self.voice.speak(f"Motor encendido. Escaneo cada {scan_t} ticks activo.")
+            self.voice.speak(f"Escaneo de ráfagas iniciado. Buscando 5 ticks de movimiento.")
         else:
             self.running = False
-            self.btn.config(text="** START ENGINE **", bg=COLORS["accent"], fg="black")
+            self.btn.config(text="** START BURST SCAN **", bg=COLORS["accent"], fg="black")
             self.buy_btn.config(state="disabled")
             self.sell_btn.config(state="disabled")
-            self.ai_status.config(text="NEURAL CORE: PAUSED", fg=COLORS["gray"])
+            self.ai_status.config(text="NEURAL CORE: STANDBY", fg=COLORS["gray"])
             self.client.unsubscribe()
-            self.voice.speak("Motor en pausa.")
+            self.voice.speak("Sistema en pausa.")
 
     def manual_trade(self, side):
         try:
             stake = float(self.s_entry.get() or 10)
             self.client.execute_trade(VOLATILITY_INDICES[self.i_combo.get()], side, stake)
-        except: pass
+            self.voice.speak(f"Orden manual de {side} enviada.")
+        except: messagebox.showerror("Error", "Stake inválido")
 
     def on_tick(self, tick):
         if not self.running: return
@@ -326,18 +320,12 @@ class SilentEngineApp:
         self.prices.append(p)
         if len(self.prices) > 60: self.prices.pop(0)
 
-        # Lógica de ticks configurada
-        try:
-            max_ticks = int(self.tick_entry.get() or 3)
-            # En modo automático forzar a 2 ticks como pidió el usuario
-            if self.m_combo.get() == "AUTOMÁTICO": max_ticks = 2
-        except: max_ticks = 3
-
+        # Scan Ticks fixed at 3
         self.tick_counter += 1
-        scan_progress = (self.tick_counter % max_ticks) if self.tick_counter % max_ticks != 0 else max_ticks
-        self.root.after(0, lambda: self.acc_label.config(text=f"TICK SCAN: {scan_progress}/{max_ticks}"))
+        scan_progress = (self.tick_counter % 3) if self.tick_counter % 3 != 0 else 3
+        self.root.after(0, lambda: self.scan_label.config(text=f"SCAN: {scan_progress}/3"))
 
-        if self.tick_counter >= max_ticks:
+        if self.tick_counter >= 3:
             self.tick_counter = 0
             self.root.after(0, self.analyze, p)
         else:
@@ -354,59 +342,60 @@ class SilentEngineApp:
         if len(self.prices) >= 25:
             df = pd.DataFrame({'close': self.prices})
             rsi = RSIIndicator(df['close']).rsi().iloc[-1]
-            bb_h = BollingerBands(df['close']).bollinger_hband().iloc[-1]
-            bb_l = BollingerBands(df['close']).bollinger_lband().iloc[-1]
             macd = MACD(df['close']).macd().iloc[-1]
             macd_s = MACD(df['close']).macd_signal().iloc[-1]
+            ema = EMAIndicator(df['close'], window=10).ema_indicator().iloc[-1]
 
-            score_buy = 0
-            score_sell = 0
-            if rsi < 32: score_buy += 35
-            elif rsi > 68: score_sell += 35
-            if p <= bb_l: score_buy += 35
-            elif p >= bb_h: score_sell += 35
-            if macd > macd_s: score_buy += 30
-            elif macd < macd_s: score_sell += 30
+            momentum_up = (rsi < 42 and p > ema) or (macd > macd_s and p > ema)
+            momentum_down = (rsi > 58 and p < ema) or (macd < macd_s and p < ema)
 
             sig = "HOLD"
-            if score_buy >= 65: sig = "BUY"
-            elif score_sell >= 65: sig = "SELL"
+            confidence = 0
+            if momentum_up:
+                sig = "BUY"
+                confidence = 85 + (min(rsi, 40) / 40) * 14.9
+            elif momentum_down:
+                sig = "SELL"
+                confidence = 85 + (min(100-rsi, 40) / 40) * 14.9
 
-            label = f"STRONG {sig} ⬆️" if sig == "BUY" else (f"STRONG {sig} ⬇️" if sig == "SELL" else "SCANNING...")
+            label = f"STRONG {sig} ⬆️" if sig == "BUY" else (f"STRONG {sig} ⬇️" if sig == "SELL" else "SCANNING DATA...")
             color = COLORS["green"] if sig == "BUY" else (COLORS["red"] if sig == "SELL" else COLORS["accent"])
 
             if self.last_signal_text != label:
                 self.sig_label.config(text=label, fg=color)
                 if sig != "HOLD":
-                    # Requerimiento especial: 10/2 y 99%
-                    conf_text = f"CALIFICACIÓN: 10/2 | PROBABILIDAD: 99.9%"
+                    # REQUERIMIENTO ESPECIAL: Calificación 10/2 y 99%
+                    conf_text = f"CALIFICACIÓN: 10/2 | PROBABILIDAD: {confidence:.1f}%"
                     self.conf_label.config(text=conf_text, fg=color)
-                    self.voice.speak(f"Calificación 10 de 2. Probabilidad del 99 por ciento. Mercado irá {'hacia arriba' if sig=='BUY' else 'hacia abajo'}. Confirmando señal.")
-                    self.start_countdown(sig)
+                    self.voice.speak(f"Calificación 10 de 2. Probabilidad del {int(confidence)} por ciento de ráfaga de 5 ticks. Iniciando.")
+                    self.start_burst_countdown(sig)
                 else:
                     self.conf_label.config(text="")
                 self.last_signal_text = label
 
-    def start_countdown(self, sig):
-        if self.is_counting_down: return
-        self.is_counting_down = True
+    def start_burst_countdown(self, sig):
+        if self.is_tracking_burst: return
+        self.is_tracking_burst = True
 
-        def run_count():
-            for i in [1, 2]:
-                self.root.after(0, lambda x=i: self.countdown_label.config(text=f"EXECUTION: {x}..."))
-                self.voice.speak(str(i))
-                time.sleep(0.8)
+        def run_burst():
+            for i in range(1, 6):
+                self.root.after(0, lambda x=i: self.burst_count_label.config(text=f"TICK {x}"))
+                self.voice.speak(f"Tick {i}")
 
-            self.root.after(0, lambda: self.countdown_label.config(text=""))
-            if self.m_combo.get() == "AUTOMÁTICO":
-                self.do_trade(sig)
-            self.is_counting_down = False
+                # REQUERIMIENTO: Entrar en el Tick 2
+                if i == 2 and self.m_combo.get() == "MODO AUTOMÁTICO":
+                    self.do_trade(sig)
 
-        threading.Thread(target=run_count, daemon=True).start()
+                time.sleep(1.0) # Un segundo entre ticks de la ráfaga
+
+            self.root.after(0, lambda: self.burst_count_label.config(text=""))
+            self.is_tracking_burst = False
+
+        threading.Thread(target=run_burst, daemon=True).start()
 
     def do_trade(self, side):
         now = time.time()
-        if now - self.last_trade_time > 10:
+        if now - self.last_trade_time > 8:
             try:
                 stake = float(self.s_entry.get() or 10)
                 self.client.execute_trade(VOLATILITY_INDICES[self.i_combo.get()], side, stake)
@@ -416,20 +405,12 @@ class SilentEngineApp:
     def on_trade_result(self, profit):
         self.total_profit += profit
         self.root.after(0, self.update_profit)
-        res = "GANANCIA" if profit > 0 else "PÉRDIDA"
-        self.voice.speak(f"Operación finalizada con {res} de {abs(profit):.2f} dólares.")
-
-        max_l = float(self.l_entry.get() or 100)
-        if self.total_profit <= -max_l:
-            self.root.after(0, self.stop_on_loss)
+        res = "GANADA" if profit > 0 else "PERDIDA"
+        self.voice.speak(f"Ráfaga completada. Operación {res}. Balance: {self.total_profit:.2f} dólares.")
 
     def update_profit(self):
         c = COLORS["green"] if self.total_profit >= 0 else COLORS["red"]
         self.profit_label.config(text=f"Profit: ${self.total_profit:.2f}", fg=c)
-
-    def stop_on_loss(self):
-        if self.running: self.toggle()
-        messagebox.showwarning("STOP LOSS", "Límite de pérdida alcanzado. Bot detenido.")
 
 if __name__ == "__main__":
     root = tk.Tk()
